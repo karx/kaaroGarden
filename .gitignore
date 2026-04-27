@@ -1,0 +1,17 @@
+# Ignore build output
+main.js
+main.js.map
+
+# Dependencies
+node_modules/
+
+# Env file with vault path (keep local only)
+.env
+
+# OS artifacts
+.DS_Store
+Thumbs.db
+
+# Editor
+.vscode/settings.json
+*.swp

@@ -1,0 +1,205 @@
+import { TFile, Vault } from "obsidian";
+
+// ── Weights (match inbox_score.py) ───────────────────────────────────────────
+const W_NAME = 0.4;
+const W_FRONTMATTER = 0.3;
+const W_MATURITY = 0.3;
+
+export type MaturityLabel = "EVERGREEN" | "BUDDING" | "SEED" | "STUB";
+export type MaturityIcon = "🌳" | "🌿" | "🌱" | "🪨";
+
+export const MATURITY_ICON: Record<MaturityLabel, MaturityIcon> = {
+  EVERGREEN: "🌳",
+  BUDDING: "🌿",
+  SEED: "🌱",
+  STUB: "🪨",
+};
+
+export interface NoteScore {
+  file: TFile;
+  words: number;
+  hasFrontmatter: boolean;
+  hasPublished: boolean;
+  nameQuality: number;
+  frontmatterScore: number;
+  maturityScore: number;
+  total: number;
+  maturity: MaturityLabel;
+}
+
+// ── Scoring functions ─────────────────────────────────────────────────────────
+
+function countWords(content: string): number {
+  // Strip YAML frontmatter before counting
+  const stripped = content.replace(/^---\s*\n[\s\S]*?\n---\s*\n/, "");
+  return stripped.trim().split(/\s+/).filter(Boolean).length;
+}
+
+function scoreName(filename: string): number {
+  const stem = filename.replace(/\.md$/, "").trim();
+
+  // Untitled variants → 0.0
+  if (/^[Uu]ntitled(\s*\d+)?$/.test(stem)) return 0.0;
+
+  const tokens = stem.split(/[\s\-_]+/).filter(Boolean);
+  if (tokens.length <= 1) return 0.3;
+
+  // Contains a date pattern → strongest signal
+  if (/\d{4}[-/]\d{2}[-/]\d{2}|\d{4}-\d{2}|\d{8}/.test(stem)) return 1.0;
+
+  return 0.7;
+}
+
+function scoreFrontmatter(content: string): { hasFm: boolean; hasPub: boolean; score: number } {
+  const hasFm = content.startsWith("---");
+  const hasPub = /^published\s*:/m.test(content);
+
+  const score = hasFm && hasPub ? 1.0 : hasFm ? 0.7 : 0.0;
+  return { hasFm, hasPub, score };
+}
+
+function scoreMaturity(wordCount: number): { label: MaturityLabel; score: number } {
+  if (wordCount < 50) return { label: "STUB", score: 0.1 };
+  if (wordCount <= 249) return { label: "SEED", score: 0.4 };
+  if (wordCount <= 699) return { label: "BUDDING", score: 0.7 };
+  return { label: "EVERGREEN", score: 1.0 };
+}
+
+export function scoreNote(file: TFile, content: string): NoteScore {
+  const words = countWords(content);
+  const nameQ = scoreName(file.name);
+  const { hasFm, hasPub, score: fmScore } = scoreFrontmatter(content);
+  const { label: maturity, score: matScore } = scoreMaturity(words);
+
+  const total = Math.round((nameQ * W_NAME + fmScore * W_FRONTMATTER + matScore * W_MATURITY) * 1000) / 1000;
+
+  return {
+    file,
+    words,
+    hasFrontmatter: hasFm,
+    hasPublished: hasPub,
+    nameQuality: nameQ,
+    frontmatterScore: fmScore,
+    maturityScore: matScore,
+    total,
+    maturity,
+  };
+}
+
+// ── Vault scanning ────────────────────────────────────────────────────────────
+
+export async function scoreInboxNotes(
+  vault: Vault,
+  inboxFolders: string[]
+): Promise<NoteScore[]> {
+  const scores: NoteScore[] = [];
+
+  for (const folderName of inboxFolders) {
+    const folder = vault.getAbstractFileByPath(folderName);
+    if (!folder) continue;
+
+    // Walk all .md files under this folder
+    const files = vault.getMarkdownFiles().filter((f) => f.path.startsWith(folderName + "/"));
+
+    for (const file of files) {
+      const content = await vault.cachedRead(file);
+      scores.push(scoreNote(file, content));
+    }
+  }
+
+  // Sort by total descending, deduplicate by path
+  const seen = new Set<string>();
+  return scores
+    .filter((s) => {
+      if (seen.has(s.file.path)) return false;
+      seen.add(s.file.path);
+      return true;
+    })
+    .sort((a, b) => b.total - a.total);
+}
+
+// ── Frontmatter extraction ────────────────────────────────────────────────────
+
+export function extractFrontmatter(content: string): Record<string, unknown> {
+  const match = content.match(/^---\s*\n([\s\S]*?)\n---\s*\n/);
+  if (!match) return {};
+
+  const result: Record<string, unknown> = {};
+  for (const line of match[1].split("\n")) {
+    const m = line.match(/^(\w[\w-]*):\s*(.*)/);
+    if (m) result[m[1]] = m[2].trim();
+  }
+  return result;
+}
+
+// ── Triage report markdown ────────────────────────────────────────────────────
+
+export function renderTriageReport(scores: NoteScore[], vaultName: string): string {
+  const now = new Date();
+  const today = now.toISOString().split("T")[0];
+  const timestamp = now.toISOString().replace("T", " ").split(".")[0];
+
+  const dist: Record<string, number> = { EVERGREEN: 0, BUDDING: 0, SEED: 0, STUB: 0 };
+  scores.forEach((s) => dist[s.maturity]++);
+
+  const rows = scores
+    .map((s) => {
+      const fm = s.hasFrontmatter ? "✓" : "✗";
+      const pub = s.hasPublished ? "✓" : "✗";
+      const icon = MATURITY_ICON[s.maturity];
+      return `| ${s.total.toFixed(2)} | \`${s.file.path}\` | ${s.words} | ${icon} ${s.maturity} | ${fm} | ${pub} |`;
+    })
+    .join("\n");
+
+  const top10 = scores
+    .slice(0, 10)
+    .map((s, i) => `${i + 1}. **\`${s.file.path}\`** — score \`${s.total.toFixed(2)}\` · ${s.maturity} · ${s.words}w`)
+    .join("\n");
+
+  return `---
+title: "Inbox Triage Report"
+date: ${today}
+tags: [reference]
+description: "Scored inbox queue for eBrain vault. Generated by eBrain Gardener plugin."
+---
+
+# Inbox Triage Report
+
+> **Vault:** \`${vaultName}\`
+> **Notes scored:** ${scores.length}
+> **Generated:** ${timestamp}
+
+---
+
+## Score Formula
+
+\`\`\`
+score = name_quality (×0.4) + frontmatter_bonus (×0.3) + maturity (×0.3)
+\`\`\`
+
+---
+
+## Maturity Distribution
+
+| Maturity | Count |
+|----------|------:|
+| 🌳 EVERGREEN | ${dist.EVERGREEN} |
+| 🌿 BUDDING   | ${dist.BUDDING} |
+| 🌱 SEED      | ${dist.SEED} |
+| 🪨 STUB      | ${dist.STUB} |
+
+---
+
+## Full Scored Queue
+
+| Score | File | Words | Maturity | FM | Published |
+|------:|------|------:|----------|----|-----------| 
+${rows}
+
+---
+
+## Top 10 — Process These First
+
+${top10}
+`;
+}

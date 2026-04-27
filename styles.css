@@ -1,0 +1,337 @@
+/* eBrain Gardener Plugin Styles */
+
+/* ── Sidebar ─────────────────────────────────────────────────────────────── */
+.ebrain-sidebar {
+  padding: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  font-size: 13px;
+}
+
+.ebrain-sidebar-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.ebrain-sidebar-header h3 {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-normal);
+}
+
+.ebrain-icon-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 4px;
+  color: var(--text-muted);
+}
+
+.ebrain-icon-btn:hover {
+  background: var(--interactive-hover);
+  color: var(--text-normal);
+}
+
+/* ── Stats row ───────────────────────────────────────────────────────────── */
+.ebrain-stats-row {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.ebrain-stat-chip {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  background: var(--background-secondary);
+  border-radius: 6px;
+  padding: 4px 8px;
+  min-width: 48px;
+}
+
+.stat-val {
+  font-weight: 700;
+  font-size: 15px;
+  color: var(--text-accent);
+}
+
+.stat-lbl {
+  font-size: 10px;
+  color: var(--text-muted);
+  text-transform: uppercase;
+}
+
+.stat-good .stat-val { color: var(--color-green); }
+.stat-warn .stat-val { color: var(--color-orange); }
+
+.ebrain-maturity-bar {
+  display: flex;
+  gap: 8px;
+  padding: 4px 0;
+  color: var(--text-muted);
+  font-size: 12px;
+}
+
+/* ── Stage action buttons ────────────────────────────────────────────────── */
+.ebrain-stage-actions {
+  display: flex;
+  gap: 4px;
+  flex-wrap: wrap;
+}
+
+.ebrain-stage-btn {
+  flex: 1;
+  min-width: 0;
+  padding: 5px 8px;
+  border-radius: 6px;
+  font-size: 11px;
+  font-weight: 600;
+  background: var(--interactive-normal);
+  color: var(--text-normal);
+  border: 1px solid var(--background-modifier-border);
+  cursor: pointer;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.ebrain-stage-btn:hover {
+  background: var(--interactive-hover);
+}
+
+/* ── Queue ───────────────────────────────────────────────────────────────── */
+.ebrain-section-title {
+  margin: 4px 0 2px;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text-muted);
+}
+
+.ebrain-queue {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  overflow-y: auto;
+  max-height: 60vh;
+}
+
+.ebrain-queue-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 6px;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background 0.1s;
+}
+
+.ebrain-queue-row:hover {
+  background: var(--interactive-hover);
+}
+
+.ebrain-score {
+  font-size: 11px;
+  font-weight: 700;
+  min-width: 30px;
+  text-align: right;
+}
+
+.score-high { color: var(--color-green); }
+.score-mid  { color: var(--color-orange); }
+.score-low  { color: var(--text-muted); }
+
+.ebrain-maturity-icon {
+  font-size: 13px;
+  flex-shrink: 0;
+}
+
+.ebrain-note-name {
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--text-normal);
+  font-size: 12px;
+}
+
+.ebrain-word-count {
+  font-size: 10px;
+  color: var(--text-faint);
+}
+
+.ebrain-loading {
+  padding: 8px;
+  color: var(--text-muted);
+  font-style: italic;
+  font-size: 12px;
+}
+
+.ebrain-empty {
+  padding: 12px;
+  text-align: center;
+  color: var(--text-muted);
+}
+
+/* ── Ribbon badge ────────────────────────────────────────────────────────── */
+.ebrain-ribbon-badge {
+  position: absolute;
+  top: 2px;
+  right: 2px;
+  background: var(--color-red);
+  color: white;
+  border-radius: 10px;
+  font-size: 9px;
+  font-weight: 700;
+  padding: 1px 4px;
+  min-width: 14px;
+  text-align: center;
+  display: none;
+}
+
+/* ── Status bar ──────────────────────────────────────────────────────────── */
+.ebrain-status {
+  cursor: pointer;
+  font-size: 12px;
+}
+
+/* ── Frontmatter diff modal ──────────────────────────────────────────────── */
+.ebrain-diff-modal .modal-content {
+  max-width: 600px;
+}
+
+.ebrain-modal-header h2 {
+  margin: 0 0 4px;
+}
+
+.ebrain-file-path {
+  font-size: 11px;
+  color: var(--text-muted);
+  font-family: var(--font-monospace);
+  margin: 0 0 12px;
+}
+
+.ebrain-rationale {
+  background: var(--background-secondary);
+  border-left: 3px solid var(--color-accent);
+  padding: 8px 12px;
+  border-radius: 4px;
+  margin-bottom: 12px;
+  font-size: 12px;
+}
+
+.ebrain-suggestion-row {
+  margin-bottom: 8px;
+  font-size: 12px;
+}
+
+.ebrain-label {
+  font-weight: 600;
+  color: var(--text-muted);
+}
+
+.ebrain-fm-preview {
+  background: var(--background-secondary);
+  border-radius: 6px;
+  padding: 10px 14px;
+  font-size: 12px;
+  overflow-x: auto;
+  margin-bottom: 12px;
+}
+
+/* ── WikiLink chips ──────────────────────────────────────────────────────── */
+.ebrain-wikilink-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 16px;
+}
+
+.ebrain-chip {
+  background: var(--interactive-accent);
+  color: var(--text-on-accent);
+  border-radius: 12px;
+  padding: 3px 10px;
+  font-size: 11px;
+  cursor: pointer;
+  transition: opacity 0.15s;
+}
+
+.ebrain-chip:hover {
+  opacity: 0.7;
+  text-decoration: line-through;
+}
+
+/* ── Modal action buttons ────────────────────────────────────────────────── */
+.ebrain-modal-actions {
+  display: flex;
+  gap: 8px;
+  justify-content: flex-end;
+  margin-top: 8px;
+}
+
+/* ── Triage modal ────────────────────────────────────────────────────────── */
+.ebrain-triage-modal .modal-content {
+  width: 90vw;
+  max-width: 900px;
+}
+
+.ebrain-table-wrapper {
+  overflow-x: auto;
+  max-height: 60vh;
+  overflow-y: auto;
+}
+
+.ebrain-triage-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 12px;
+}
+
+.ebrain-triage-table th,
+.ebrain-triage-table td {
+  padding: 6px 10px;
+  border-bottom: 1px solid var(--background-modifier-border);
+  text-align: left;
+}
+
+.ebrain-triage-table th.sortable {
+  cursor: pointer;
+  user-select: none;
+  color: var(--text-muted);
+  font-weight: 600;
+  text-transform: uppercase;
+  font-size: 10px;
+  letter-spacing: 0.04em;
+}
+
+.ebrain-triage-table th.sort-asc::after { content: " ↑"; }
+.ebrain-triage-table th.sort-desc::after { content: " ↓"; }
+
+.ebrain-triage-table tbody tr:hover {
+  background: var(--interactive-hover);
+}
+
+.ebrain-note-link {
+  cursor: pointer;
+  color: var(--text-accent);
+}
+
+.ebrain-actions-cell {
+  display: flex;
+  gap: 4px;
+}
+
+.ebrain-action-btn {
+  padding: 3px 8px;
+  font-size: 11px;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.tick { color: var(--color-green); }
+.cross { color: var(--color-red); }
