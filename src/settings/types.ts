@@ -7,15 +7,17 @@ export interface EBrainSettings {
   ollamaBaseUrl: string;
   triageReportPath: string;
   inboxFolders: string[];
-  // Note: API keys are NOT stored here — they go to OS SecretStorage
+  skillPath: string;
+  // Note: API keys are NOT stored here — they go to data.json under _keys
 }
 
 export const DEFAULT_SETTINGS: EBrainSettings = {
   provider: "gemini",
   model: "gemini-2.0-flash",
   ollamaBaseUrl: "http://localhost:11434",
-  triageReportPath: "1 Projects/Digital Garden/Triage Report.md",
+  triageReportPath: "Garden Triage Report.md",
   inboxFolders: ["Inbox", "0_Inbox"],
+  skillPath: "",
 };
 
 export const PROVIDER_MODELS: Record<LLMProvider, string[]> = {

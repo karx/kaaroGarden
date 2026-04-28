@@ -2,20 +2,19 @@ import { App, TFile } from "obsidian";
 
 /**
  * Loads the SKILL.md file from the vault at runtime.
- * This ensures the plugin always uses the same system prompt as the manual agent workflow.
- * Falls back to a minimal embedded prompt if SKILL.md is not found.
+ * Falls back to a built-in prompt if no path is configured or the file is not found.
  */
-export async function loadSkillPrompt(app: App): Promise<string> {
-  const skillPath = "1 Projects/Digital Garden/SKILL.md";
-  const file = app.vault.getAbstractFileByPath(skillPath);
+export async function loadSkillPrompt(app: App, skillPath?: string): Promise<string> {
+  const resolvedPath = skillPath?.trim();
+  if (!resolvedPath) return FALLBACK_SKILL_PROMPT;
+
+  const file = app.vault.getAbstractFileByPath(resolvedPath);
 
   if (file instanceof TFile) {
     const raw = await app.vault.read(file);
-    // Strip YAML frontmatter block
     return raw.replace(/^---\s*\n[\s\S]*?\n---\s*\n/, "").trim();
   }
 
-  // Minimal fallback if SKILL.md not found
   return FALLBACK_SKILL_PROMPT;
 }
 

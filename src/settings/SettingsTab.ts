@@ -131,6 +131,18 @@ export class EBrainSettingsTab extends PluginSettingTab {
           await this.plugin.saveSettings();
         });
       });
+
+    new Setting(containerEl)
+      .setName("Skill Prompt Path")
+      .setDesc("Vault-relative path to a custom SKILL.md system prompt (e.g. Resources/SKILL.md). Leave empty to use the built-in prompt.")
+      .addText((text) => {
+        text.setPlaceholder("Resources/SKILL.md");
+        text.setValue(this.plugin.settings.skillPath);
+        text.onChange(async (value) => {
+          this.plugin.settings.skillPath = value.trim();
+          await this.plugin.saveSettings();
+        });
+      });
   }
 
   private updateModelDropdown(dropdown: DropdownComponent, provider: LLMProvider): void {

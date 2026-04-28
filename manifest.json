@@ -3,8 +3,8 @@
   "name": "eBrain Gardener",
   "version": "0.1.0",
   "minAppVersion": "1.4.0",
-  "description": "PROCESS → TRIAGE → PUBLISH pipeline for the eBrain Digital Garden vault. Inbox scoring, LLM-powered frontmatter enrichment, and WikiLink suggestions — natively in Obsidian.",
+  "description": "Digital garden pipeline: inbox scoring, LLM-powered frontmatter enrichment, and WikiLink suggestions — no terminal needed.",
   "author": "karx",
-  "authorUrl": "https://karx.github.io",
+  "authorUrl": "https://github.com/karx",
   "isDesktopOnly": false
 }

@@ -52,7 +52,7 @@ export async function processNoteCommand(plugin: EBrainGardenerPlugin): Promise<
 
   try {
     const llm = await buildProvider(plugin);
-    const skillPrompt = await loadSkillPrompt(plugin.app);
+    const skillPrompt = await loadSkillPrompt(plugin.app, plugin.settings.skillPath);
     const content = await plugin.app.vault.read(file);
     const today = new Date().toISOString().split("T")[0];
 
@@ -93,7 +93,7 @@ export async function publishNoteCommand(plugin: EBrainGardenerPlugin): Promise<
 
   try {
     const llm = await buildProvider(plugin);
-    const skillPrompt = await loadSkillPrompt(plugin.app);
+    const skillPrompt = await loadSkillPrompt(plugin.app, plugin.settings.skillPath);
     const content = await plugin.app.vault.read(file);
     const today = new Date().toISOString().split("T")[0];
     const { buildPublishPrompt } = await import("../skill/prompt");
