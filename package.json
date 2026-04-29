@@ -1,6 +1,6 @@
 {
   "name": "ebrain-gardener",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "PROCESS → TRIAGE → PUBLISH pipeline for the eBrain Digital Garden vault",
   "main": "main.js",
   "scripts": {
