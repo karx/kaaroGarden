@@ -8,6 +8,8 @@ export interface EBrainSettings {
   triageReportPath: string;
   inboxFolders: string[];
   skillPath: string;
+  processPromptPath: string;
+  publishPromptPath: string;
   // Note: API keys are NOT stored here — they go to data.json under _keys
 }
 
@@ -18,6 +20,8 @@ export const DEFAULT_SETTINGS: EBrainSettings = {
   triageReportPath: "Garden Triage Report.md",
   inboxFolders: ["Inbox", "0_Inbox"],
   skillPath: "",
+  processPromptPath: "",
+  publishPromptPath: "",
 };
 
 export const PROVIDER_MODELS: Record<LLMProvider, string[]> = {

@@ -75,7 +75,7 @@ export class EBrainSettingsTab extends PluginSettingTab {
       text.onChange(async (value) => {
         if (value.trim()) {
           await this.plugin.secrets.setApiKey(this.plugin.settings.provider, value.trim());
-          new Notice("✅ API key saved to keychain");
+          new Notice("API key saved.");
           text.setValue("");
           text.inputEl.placeholder = "••••••••••••• (stored)";
         }
@@ -88,7 +88,7 @@ export class EBrainSettingsTab extends PluginSettingTab {
         .onClick(async () => {
           await this.plugin.secrets.clearApiKey(this.plugin.settings.provider);
           if (keyField) keyField.inputEl.placeholder = "Paste your API key here…";
-          new Notice("🗑️ API key cleared from keychain");
+          new Notice("API key cleared.");
         });
     });
 
@@ -140,6 +140,37 @@ export class EBrainSettingsTab extends PluginSettingTab {
         text.setValue(this.plugin.settings.skillPath);
         text.onChange(async (value) => {
           this.plugin.settings.skillPath = value.trim();
+          await this.plugin.saveSettings();
+        });
+      });
+
+    containerEl.createEl("h3", { text: "Prompt Templates" });
+    containerEl.createEl("p", {
+      text: "Optional vault files that override the built-in Stage 1 and Stage 3 prompts. "
+        + "Available template variables: {{skill}}, {{content}}, {{filename}}, {{date}}, {{candidates}}.",
+      cls: "setting-item-description",
+    });
+
+    new Setting(containerEl)
+      .setName("Stage 1 — Process prompt template")
+      .setDesc("Vault-relative path to a Markdown file used as the full Stage 1 prompt. Leave empty to use the built-in prompt.")
+      .addText((text) => {
+        text.setPlaceholder("Resources/process-prompt.md");
+        text.setValue(this.plugin.settings.processPromptPath);
+        text.onChange(async (value) => {
+          this.plugin.settings.processPromptPath = value.trim();
+          await this.plugin.saveSettings();
+        });
+      });
+
+    new Setting(containerEl)
+      .setName("Stage 3 — Publish prompt template")
+      .setDesc("Vault-relative path to a Markdown file used as the full Stage 3 prompt. Leave empty to use the built-in prompt.")
+      .addText((text) => {
+        text.setPlaceholder("Resources/publish-prompt.md");
+        text.setValue(this.plugin.settings.publishPromptPath);
+        text.onChange(async (value) => {
+          this.plugin.settings.publishPromptPath = value.trim();
           await this.plugin.saveSettings();
         });
       });

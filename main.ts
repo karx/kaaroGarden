@@ -36,7 +36,7 @@ export default class EBrainGardenerPlugin extends Plugin {
     // ── Status bar ────────────────────────────────────────────────────────────
     this.statusBarItem = this.addStatusBarItem();
     this.statusBarItem.addClass("ebrain-status");
-    this.statusBarItem.setText("🌱");
+    this.statusBarItem.setText("Garden");
     this.statusBarItem.title = "eBrain Garden — click to open";
     this.statusBarItem.addEventListener("click", () => this.activateSidebar());
 
@@ -65,7 +65,7 @@ export default class EBrainGardenerPlugin extends Plugin {
       name: "eBrain: Score inbox & refresh sidebar",
       callback: async () => {
         await this.refreshSidebar();
-        new Notice("🌱 Inbox scored — sidebar refreshed");
+        new Notice("Inbox scored — sidebar refreshed.");
       },
     });
 
@@ -89,7 +89,7 @@ export default class EBrainGardenerPlugin extends Plugin {
       this.updateRibbonBadge();
     });
 
-    console.log("[eBrain Gardener] loaded ✅");
+    console.log("[eBrain Gardener] loaded");
   }
 
   onunload(): void {
@@ -147,16 +147,15 @@ export default class EBrainGardenerPlugin extends Plugin {
 
     const file = this.app.workspace.getActiveFile();
     if (!file) {
-      this.statusBarItem.setText("🌱");
+      this.statusBarItem.setText("Garden");
       return;
     }
 
     const content = await this.app.vault.cachedRead(file);
     const { scoreNote } = await import("./src/scoring");
-    const { MATURITY_ICON } = await import("./src/scoring");
     const score = scoreNote(file, content);
-    this.statusBarItem.setText(`${MATURITY_ICON[score.maturity]} ${score.maturity}`);
-    this.statusBarItem.title = `Score: ${score.total.toFixed(2)} · ${score.words}w`;
+    this.statusBarItem.setText(score.maturity);
+    this.statusBarItem.title = `Score: ${score.total.toFixed(2)} | ${score.words}w`;
   }
 
   // ── Ribbon badge: count of ready-to-review notes ─────────────────────────

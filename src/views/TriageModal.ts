@@ -1,6 +1,6 @@
 import { App, Modal, Notice, TFile } from "obsidian";
 import type EBrainGardenerPlugin from "../../main";
-import { NoteScore, scoreInboxNotes, MATURITY_ICON } from "../scoring";
+import { NoteScore, scoreInboxNotes } from "../scoring";
 
 /**
  * Full scored inbox table modal with sortable columns and direct action buttons.
@@ -21,7 +21,7 @@ export class TriageModal extends Modal {
     const { contentEl } = this;
     contentEl.empty();
 
-    contentEl.createEl("h2", { text: "📊 Inbox Triage Queue" });
+    contentEl.createEl("h2", { text: "Inbox Triage Queue" });
 
     const loading = contentEl.createDiv({ text: "Scoring inbox notes…", cls: "ebrain-loading" });
 
@@ -35,7 +35,7 @@ export class TriageModal extends Modal {
 
     // Save report button
     const btnRow = contentEl.createDiv({ cls: "ebrain-modal-actions" });
-    const saveBtn = btnRow.createEl("button", { cls: "mod-cta", text: "💾 Save Triage Report" });
+    const saveBtn = btnRow.createEl("button", { cls: "mod-cta", text: "Save Triage Report" });
     saveBtn.addEventListener("click", () => this.saveReport());
 
     const closeBtn = btnRow.createEl("button", { text: "Close" });
@@ -84,7 +84,7 @@ export class TriageModal extends Modal {
       const scoreClass = score.total >= 0.7 ? "score-high" : score.total >= 0.4 ? "score-mid" : "score-low";
 
       tr.createEl("td", { text: score.total.toFixed(2), cls: scoreClass });
-      tr.createEl("td", { text: `${MATURITY_ICON[score.maturity]} ${score.maturity}` });
+      tr.createEl("td", { text: score.maturity });
       tr.createEl("td", { text: String(score.words) });
       tr.createEl("td", { text: score.hasFrontmatter ? "✓" : "✗", cls: score.hasFrontmatter ? "tick" : "cross" });
       tr.createEl("td", { text: score.hasPublished ? "✓" : "✗", cls: score.hasPublished ? "tick" : "cross" });
@@ -107,7 +107,7 @@ export class TriageModal extends Modal {
       });
 
       if (!score.hasPublished) {
-        const publishBtn = actionsTd.createEl("button", { text: "🌿 Publish", cls: "ebrain-action-btn mod-cta" });
+        const publishBtn = actionsTd.createEl("button", { text: "Publish", cls: "ebrain-action-btn mod-cta" });
         publishBtn.addEventListener("click", async () => {
           await this.app.workspace.openLinkText(score.file.path, "", false);
           // @ts-ignore
@@ -130,7 +130,7 @@ export class TriageModal extends Modal {
       await this.app.vault.create(path, report);
     }
 
-    new Notice(`📄 Triage report saved → ${path}`);
+    new Notice(`Triage report saved: ${path}`);
   }
 
   onClose(): void {

@@ -6,14 +6,6 @@ const W_FRONTMATTER = 0.3;
 const W_MATURITY = 0.3;
 
 export type MaturityLabel = "EVERGREEN" | "BUDDING" | "SEED" | "STUB";
-export type MaturityIcon = "🌳" | "🌿" | "🌱" | "🪨";
-
-export const MATURITY_ICON: Record<MaturityLabel, MaturityIcon> = {
-  EVERGREEN: "🌳",
-  BUDDING: "🌿",
-  SEED: "🌱",
-  STUB: "🪨",
-};
 
 export interface NoteScore {
   file: TFile;
@@ -144,10 +136,9 @@ export function renderTriageReport(scores: NoteScore[], vaultName: string): stri
 
   const rows = scores
     .map((s) => {
-      const fm = s.hasFrontmatter ? "✓" : "✗";
-      const pub = s.hasPublished ? "✓" : "✗";
-      const icon = MATURITY_ICON[s.maturity];
-      return `| ${s.total.toFixed(2)} | \`${s.file.path}\` | ${s.words} | ${icon} ${s.maturity} | ${fm} | ${pub} |`;
+      const fm = s.hasFrontmatter ? "yes" : "no";
+      const pub = s.hasPublished ? "yes" : "no";
+      return `| ${s.total.toFixed(2)} | \`${s.file.path}\` | ${s.words} | ${s.maturity} | ${fm} | ${pub} |`;
     })
     .join("\n");
 
@@ -181,12 +172,12 @@ score = name_quality (×0.4) + frontmatter_bonus (×0.3) + maturity (×0.3)
 
 ## Maturity Distribution
 
-| Maturity | Count |
-|----------|------:|
-| 🌳 EVERGREEN | ${dist.EVERGREEN} |
-| 🌿 BUDDING   | ${dist.BUDDING} |
-| 🌱 SEED      | ${dist.SEED} |
-| 🪨 STUB      | ${dist.STUB} |
+| Maturity  | Count |
+|-----------|------:|
+| EVERGREEN | ${dist.EVERGREEN} |
+| BUDDING   | ${dist.BUDDING} |
+| SEED      | ${dist.SEED} |
+| STUB      | ${dist.STUB} |
 
 ---
 

@@ -31,7 +31,7 @@ export class FrontmatterDiffModal extends Modal {
     contentEl.addClass("ebrain-diff-modal");
 
     const header = contentEl.createDiv({ cls: "ebrain-modal-header" });
-    header.createEl("h2", { text: `🌱 Process Suggestion` });
+    header.createEl("h2", { text: "Process Suggestion" });
     header.createEl("p", { text: this.file.path, cls: "ebrain-file-path" });
 
     // Rationale
@@ -44,7 +44,7 @@ export class FrontmatterDiffModal extends Modal {
     // Suggested folder
     if (this.suggestion.suggestedFolder) {
       const folderRow = contentEl.createDiv({ cls: "ebrain-suggestion-row" });
-      folderRow.createEl("span", { text: "📁 Move to: ", cls: "ebrain-label" });
+      folderRow.createEl("span", { text: "Move to: ", cls: "ebrain-label" });
       folderRow.createEl("code", { text: this.suggestion.suggestedFolder });
     }
 
@@ -72,7 +72,7 @@ export class FrontmatterDiffModal extends Modal {
 
     const acceptBtn = actions.createEl("button", {
       cls: "mod-cta",
-      text: "✅ Accept & Apply",
+      text: "Accept & Apply",
     });
     acceptBtn.addEventListener("click", () => {
       this.onAccept(this.suggestion);
@@ -80,10 +80,10 @@ export class FrontmatterDiffModal extends Modal {
     });
 
     const rejectBtn = actions.createEl("button", {
-      text: "❌ Reject",
+      text: "Reject",
     });
     rejectBtn.addEventListener("click", () => {
-      new Notice("Suggestion rejected — no changes made.");
+      new Notice("Suggestion rejected. No changes made.");
       this.close();
     });
   }
@@ -154,5 +154,5 @@ export async function applyFrontmatter(
   }
 
   await app.vault.modify(file, fm + body);
-  new Notice(`✅ Frontmatter applied to ${file.name}`);
+  new Notice(`Frontmatter applied to ${file.name}`);
 }

@@ -1,6 +1,6 @@
 import { App, ItemView, WorkspaceLeaf, Notice, TFile, setIcon } from "obsidian";
 import type EBrainGardenerPlugin from "../../main";
-import { NoteScore, scoreInboxNotes, MATURITY_ICON } from "../scoring";
+import { NoteScore, scoreInboxNotes } from "../scoring";
 
 export const GARDEN_SIDEBAR_VIEW_TYPE = "ebrain-garden-sidebar";
 
@@ -38,7 +38,7 @@ export class GardenSidebarView extends ItemView {
 
     // Header
     const header = containerEl.createDiv({ cls: "ebrain-sidebar-header" });
-    header.createEl("h3", { text: "🌱 eBrain Garden" });
+    header.createEl("h3", { text: "eBrain Garden" });
 
     const refreshBtn = header.createEl("button", { cls: "ebrain-icon-btn", title: "Refresh scores" });
     setIcon(refreshBtn, "refresh-cw");
@@ -114,15 +114,10 @@ export class GardenSidebarView extends ItemView {
 
     // Maturity bar
     const bar = el.createDiv({ cls: "ebrain-maturity-bar" });
-    [
-      { label: "EVERGREEN", icon: "🌳" },
-      { label: "BUDDING", icon: "🌿" },
-      { label: "SEED", icon: "🌱" },
-      { label: "STUB", icon: "🪨" },
-    ].forEach(({ label, icon }) => {
+    (["EVERGREEN", "BUDDING", "SEED", "STUB"] as const).forEach((label) => {
       bar.createSpan({
         title: label,
-        text: `${icon} ${dist[label] ?? 0}`,
+        text: `${label.slice(0, 4)} ${dist[label] ?? 0}`,
         cls: `mat-${label.toLowerCase()}`,
       });
     });
@@ -132,7 +127,7 @@ export class GardenSidebarView extends ItemView {
     el.empty();
 
     if (this.scores.length === 0) {
-      el.createDiv({ cls: "ebrain-empty", text: "Inbox is empty 🎉" });
+      el.createDiv({ cls: "ebrain-empty", text: "Inbox is empty." });
       return;
     }
 
@@ -144,8 +139,7 @@ export class GardenSidebarView extends ItemView {
         text: score.total.toFixed(2),
       });
 
-      const icon = MATURITY_ICON[score.maturity];
-      row.createSpan({ cls: "ebrain-maturity-icon", text: icon });
+      row.createSpan({ cls: "ebrain-maturity-icon", text: score.maturity.slice(0, 4) });
 
       const name = row.createSpan({
         cls: "ebrain-note-name",

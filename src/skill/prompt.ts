@@ -1,5 +1,24 @@
 import { App, TFile } from "obsidian";
 
+export async function loadPromptTemplate(
+  app: App,
+  templatePath: string | undefined
+): Promise<string | null> {
+  const path = templatePath?.trim();
+  if (!path) return null;
+  const file = app.vault.getAbstractFileByPath(path);
+  if (!(file instanceof TFile)) return null;
+  const raw = await app.vault.read(file);
+  return raw.replace(/^---\s*\n[\s\S]*?\n---\s*\n/, "").trim();
+}
+
+export function interpolateTemplate(
+  template: string,
+  vars: Record<string, string>
+): string {
+  return template.replace(/\{\{(\w+)\}\}/g, (_, key) => vars[key] ?? `{{${key}}}`);
+}
+
 /**
  * Loads the SKILL.md file from the vault at runtime.
  * Falls back to a built-in prompt if no path is configured or the file is not found.

@@ -1,12 +1,43 @@
 import { App, Notice, TFile } from "obsidian";
 import type EBrainGardenerPlugin from "../../main";
-import { loadSkillPrompt, buildFrontmatterPrompt } from "../skill/prompt";
+import { loadSkillPrompt, buildFrontmatterPrompt, buildPublishPrompt, loadPromptTemplate, interpolateTemplate } from "../skill/prompt";
 import { FrontmatterDiffModal, applyFrontmatter } from "../ui/FrontmatterDiff";
 import { GeminiProvider } from "../llm/gemini";
 import { OpenAIProvider, AnthropicProvider } from "../llm/openai";
 import { OllamaProvider } from "../llm/ollama";
 import { LLMProvider } from "../llm/provider";
 import { GardenSidebarView } from "../views/GardenSidebar";
+
+// ── LLM progress reporter ─────────────────────────────────────────────────────
+
+class LLMProgress {
+  private notice: Notice;
+  private start: number;
+  private label: string;
+
+  constructor(provider: string, model: string) {
+    this.label = `${provider} / ${model}`;
+    this.start = Date.now();
+    this.notice = new Notice(`[${this.label}] Connecting...`, 0);
+  }
+
+  step(msg: string): void {
+    const elapsed = ((Date.now() - this.start) / 1000).toFixed(1);
+    this.notice.setMessage(`[${this.label}] ${msg} (${elapsed}s)`);
+  }
+
+  finish(): void {
+    this.notice.hide();
+  }
+
+  fail(msg: string): void {
+    const elapsed = ((Date.now() - this.start) / 1000).toFixed(1);
+    this.notice.setMessage(`[${this.label}] Failed after ${elapsed}s: ${msg}`);
+    window.setTimeout(() => this.notice.hide(), 8000);
+  }
+}
+
+// ── Provider factory ──────────────────────────────────────────────────────────
 
 async function buildProvider(plugin: EBrainGardenerPlugin): Promise<LLMProvider> {
   const { provider, model, ollamaBaseUrl } = plugin.settings;
@@ -17,7 +48,7 @@ async function buildProvider(plugin: EBrainGardenerPlugin): Promise<LLMProvider>
 
   const key = await plugin.secrets.getApiKey(provider);
   if (!key) {
-    throw new Error(`No API key found for ${provider}. Go to Settings → eBrain Gardener to add one.`);
+    throw new Error(`No API key found for ${provider}. Go to Settings > eBrain Gardener to add one.`);
   }
 
   switch (provider) {
@@ -35,68 +66,88 @@ async function buildProvider(plugin: EBrainGardenerPlugin): Promise<LLMProvider>
 function getActiveFile(app: App): TFile | null {
   const file = app.workspace.getActiveFile();
   if (!file) {
-    new Notice("⚠️ No active note. Open a note first.");
+    new Notice("No active note. Open a note first.");
     return null;
   }
   return file;
 }
 
-/**
- * Stage 1: PROCESS — Score + Classify + Suggest Frontmatter + WikiLinks
- */
+function refreshSidebar(plugin: EBrainGardenerPlugin): void {
+  const leaf = plugin.app.workspace
+    .getLeavesOfType("ebrain-garden-sidebar")
+    .find((l) => l.view instanceof GardenSidebarView);
+  if (leaf) (leaf.view as GardenSidebarView).refresh();
+}
+
+// ── Stage 1: PROCESS ─────────────────────────────────────────────────────────
+
 export async function processNoteCommand(plugin: EBrainGardenerPlugin): Promise<void> {
   const file = getActiveFile(plugin.app);
   if (!file) return;
 
-  new Notice(`🌱 Processing "${file.basename}"…`);
+  const { provider, model } = plugin.settings;
+  const progress = new LLMProgress(provider, model);
 
   try {
+    progress.step("Building provider...");
     const llm = await buildProvider(plugin);
+
+    progress.step("Loading prompt...");
     const skillPrompt = await loadSkillPrompt(plugin.app, plugin.settings.skillPath);
     const content = await plugin.app.vault.read(file);
     const today = new Date().toISOString().split("T")[0];
 
-    // Gather vault note names as WikiLink candidates
     const existingNotes = plugin.app.vault
       .getMarkdownFiles()
       .map((f) => f.basename)
       .filter((n) => n !== file.basename)
       .slice(0, 100);
 
-    const prompt = buildFrontmatterPrompt(skillPrompt, content, file.name, today, existingNotes);
+    const customTemplate = await loadPromptTemplate(plugin.app, plugin.settings.processPromptPath);
+    const prompt = customTemplate
+      ? interpolateTemplate(customTemplate, {
+          skill: skillPrompt,
+          content: content.slice(0, 3000),
+          filename: file.name,
+          date: today,
+          candidates: existingNotes.slice(0, 50).join(", "),
+        })
+      : buildFrontmatterPrompt(skillPrompt, content, file.name, today, existingNotes);
+
+    progress.step("Waiting for LLM response...");
     const suggestion = await llm.suggest(prompt);
 
-    // Show diff modal for user approval
+    progress.step("Parsing suggestion...");
+    progress.finish();
+
     new FrontmatterDiffModal(plugin.app, plugin, file, suggestion, async (accepted) => {
       await applyFrontmatter(plugin.app, file, accepted);
-      // Refresh sidebar
-      const sidebar = plugin.app.workspace
-        .getLeavesOfType("ebrain-garden-sidebar")
-        .find((l) => l.view instanceof GardenSidebarView);
-      if (sidebar) await (sidebar.view as GardenSidebarView).refresh();
+      refreshSidebar(plugin);
     }).open();
   } catch (err: unknown) {
     const msg = err instanceof Error ? err.message : String(err);
-    new Notice(`❌ Process failed: ${msg}`, 8000);
+    progress.fail(msg);
     console.error("[eBrain Gardener] processNote error:", err);
   }
 }
 
-/**
- * Stage 3: PUBLISH ACTION — Enrich + Set published: true
- */
+// ── Stage 3: PUBLISH ─────────────────────────────────────────────────────────
+
 export async function publishNoteCommand(plugin: EBrainGardenerPlugin): Promise<void> {
   const file = getActiveFile(plugin.app);
   if (!file) return;
 
-  new Notice(`🌿 Preparing publish for "${file.basename}"…`);
+  const { provider, model } = plugin.settings;
+  const progress = new LLMProgress(provider, model);
 
   try {
+    progress.step("Building provider...");
     const llm = await buildProvider(plugin);
+
+    progress.step("Loading prompt...");
     const skillPrompt = await loadSkillPrompt(plugin.app, plugin.settings.skillPath);
     const content = await plugin.app.vault.read(file);
     const today = new Date().toISOString().split("T")[0];
-    const { buildPublishPrompt } = await import("../skill/prompt");
 
     const existingNotes = plugin.app.vault
       .getMarkdownFiles()
@@ -104,21 +155,32 @@ export async function publishNoteCommand(plugin: EBrainGardenerPlugin): Promise<
       .filter((n) => n !== file.basename)
       .slice(0, 100);
 
-    const prompt = buildPublishPrompt(skillPrompt, content, file.name, today, existingNotes);
+    const customTemplate = await loadPromptTemplate(plugin.app, plugin.settings.publishPromptPath);
+    const prompt = customTemplate
+      ? interpolateTemplate(customTemplate, {
+          skill: skillPrompt,
+          content: content.slice(0, 3000),
+          filename: file.name,
+          date: today,
+          candidates: existingNotes.slice(0, 50).join(", "),
+        })
+      : buildPublishPrompt(skillPrompt, content, file.name, today, existingNotes);
+
+    progress.step("Waiting for LLM response...");
     const suggestion = await llm.suggest(prompt);
-    suggestion.published = true; // Enforce Stage 3 gate
+    suggestion.published = true;
+
+    progress.step("Parsing suggestion...");
+    progress.finish();
 
     new FrontmatterDiffModal(plugin.app, plugin, file, suggestion, async (accepted) => {
       await applyFrontmatter(plugin.app, file, accepted);
-      new Notice(`🌿 "${file.basename}" marked as published!`);
-      const sidebar = plugin.app.workspace
-        .getLeavesOfType("ebrain-garden-sidebar")
-        .find((l) => l.view instanceof GardenSidebarView);
-      if (sidebar) await (sidebar.view as GardenSidebarView).refresh();
+      new Notice(`"${file.basename}" marked as published.`);
+      refreshSidebar(plugin);
     }).open();
   } catch (err: unknown) {
     const msg = err instanceof Error ? err.message : String(err);
-    new Notice(`❌ Publish failed: ${msg}`, 8000);
+    progress.fail(msg);
     console.error("[eBrain Gardener] publishNote error:", err);
   }
 }
