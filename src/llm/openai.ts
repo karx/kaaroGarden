@@ -47,7 +47,7 @@ export class OpenAIProvider implements LLMProvider {
 export class AnthropicProvider implements LLMProvider {
   constructor(
     private apiKey: string,
-    private model: string = "claude-3-5-sonnet-20241022"
+    private model: string = "claude-sonnet-4-6"
   ) {}
 
   async suggest(prompt: string): Promise<FrontmatterSuggestion> {
@@ -61,7 +61,7 @@ export class AnthropicProvider implements LLMProvider {
       },
       body: JSON.stringify({
         model: this.model,
-        max_tokens: 1024,
+        max_tokens: 2048,
         messages: [{ role: "user", content: prompt }],
       }),
     });

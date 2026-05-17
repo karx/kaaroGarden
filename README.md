@@ -122,6 +122,21 @@ This lets you tune the LLM's tagging taxonomy, frontmatter schema, or writing st
 
 ---
 
+## Privacy & Network
+
+This plugin makes outbound HTTPS requests **only when you explicitly trigger a Process or Publish command**, and only to the LLM provider you configure in settings:
+
+| Provider | Endpoint called |
+|---|---|
+| Google Gemini | `https://generativelanguage.googleapis.com` |
+| OpenAI | `https://api.openai.com` |
+| Anthropic | `https://api.anthropic.com` |
+| Ollama | `http://localhost:11434` (local — no internet) |
+
+No data is sent to the plugin author's servers. Your vault content (the active note's frontmatter and body) is sent to whichever provider you choose, subject to that provider's privacy policy. API keys are stored locally in `data.json` and never leave your device except as the `Authorization` header sent to your chosen provider.
+
+---
+
 ## Developer Setup
 
 ### Clone & install

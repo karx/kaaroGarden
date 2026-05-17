@@ -1,6 +1,7 @@
 import { App, Modal, Notice, TFile } from "obsidian";
 import type EBrainGardenerPlugin from "../../main";
 import { NoteScore, scoreInboxNotes } from "../scoring";
+import { processNoteCommand, publishNoteCommand } from "../commands/noteCommands";
 
 /**
  * Full scored inbox table modal with sortable columns and direct action buttons.
@@ -101,8 +102,7 @@ export class TriageModal extends Modal {
       const processBtn = actionsTd.createEl("button", { text: "Process", cls: "ebrain-action-btn" });
       processBtn.addEventListener("click", async () => {
         await this.app.workspace.openLinkText(score.file.path, "", false);
-        // @ts-ignore
-        this.plugin.app.commands.executeCommandById("ebrain-gardener:processNote");
+        processNoteCommand(this.plugin);
         this.close();
       });
 
@@ -110,8 +110,7 @@ export class TriageModal extends Modal {
         const publishBtn = actionsTd.createEl("button", { text: "Publish", cls: "ebrain-action-btn mod-cta" });
         publishBtn.addEventListener("click", async () => {
           await this.app.workspace.openLinkText(score.file.path, "", false);
-          // @ts-ignore
-          this.plugin.app.commands.executeCommandById("ebrain-gardener:publishNote");
+          publishNoteCommand(this.plugin);
           this.close();
         });
       }

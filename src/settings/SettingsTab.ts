@@ -59,7 +59,10 @@ export class EBrainSettingsTab extends PluginSettingTab {
     // ── API Key ───────────────────────────────────────────────────────────────
     const keySetting = new Setting(containerEl)
       .setName("API Key")
-      .setDesc("Stored securely in your OS keychain — never saved to disk.");
+      .setDesc(
+        "Stored in your vault's data.json (inside .obsidian/plugins/ebrain-gardener/). " +
+        "Keep that folder out of cloud sync or version control to protect your keys."
+      );
 
     keySetting.addText((text) => {
       keyField = text;

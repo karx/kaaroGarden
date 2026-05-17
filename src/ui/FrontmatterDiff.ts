@@ -2,6 +2,22 @@ import { App, Modal, Notice, TFile } from "obsidian";
 import type EBrainGardenerPlugin from "../../main";
 import { FrontmatterSuggestion } from "../llm/provider";
 
+export function buildFrontmatterYAML(s: FrontmatterSuggestion): string {
+  const tags = s.tags.length > 0 ? `\n  - ${s.tags.join("\n  - ")}` : " []";
+  return [
+    "---",
+    `published: ${s.published}`,
+    `title: "${s.title}"`,
+    `tags:${tags}`,
+    `description: "${s.description}"`,
+    `date: ${s.date}`,
+    `layer: ${s.layer}`,
+    `maturity: ${s.maturity}`,
+    `para: ${s.para}`,
+    "---",
+  ].join("\n");
+}
+
 /**
  * Shows a diff-style preview of proposed frontmatter changes.
  * User can accept all, reject, or edit individual fields before applying.
@@ -51,7 +67,7 @@ export class FrontmatterDiffModal extends Modal {
     // Frontmatter preview
     contentEl.createEl("h3", { text: "Frontmatter to inject" });
     const fmBlock = contentEl.createEl("pre", { cls: "ebrain-fm-preview" });
-    fmBlock.createEl("code", { text: this.buildFrontmatterYAML(this.suggestion) });
+    fmBlock.createEl("code", { text: buildFrontmatterYAML(this.suggestion) });
 
     // WikiLinks
     if (this.suggestion.wikilinks.length > 0) {
@@ -88,22 +104,6 @@ export class FrontmatterDiffModal extends Modal {
     });
   }
 
-  private buildFrontmatterYAML(s: FrontmatterSuggestion): string {
-    const tags = s.tags.length > 0 ? `\n  - ${s.tags.join("\n  - ")}` : " []";
-    return [
-      "---",
-      `published: ${s.published}`,
-      `title: "${s.title}"`,
-      `tags:${tags}`,
-      `description: "${s.description}"`,
-      `date: ${s.date}`,
-      `layer: ${s.layer}`,
-      `maturity: ${s.maturity}`,
-      `para: ${s.para}`,
-      "---",
-    ].join("\n");
-  }
-
   onClose(): void {
     this.contentEl.empty();
   }
@@ -120,23 +120,7 @@ export async function applyFrontmatter(
 ): Promise<void> {
   const content = await app.vault.read(file);
 
-  const tags = suggestion.tags.length > 0
-    ? `\n  - ${suggestion.tags.join("\n  - ")}`
-    : " []";
-
-  const fm = [
-    "---",
-    `published: ${suggestion.published}`,
-    `title: "${suggestion.title}"`,
-    `tags:${tags}`,
-    `description: "${suggestion.description}"`,
-    `date: ${suggestion.date}`,
-    `layer: ${suggestion.layer}`,
-    `maturity: ${suggestion.maturity}`,
-    `para: ${suggestion.para}`,
-    "---",
-    "",
-  ].join("\n");
+  const fm = buildFrontmatterYAML(suggestion) + "\n";
 
   // Remove existing frontmatter if present
   const stripped = content.replace(/^---\s*\n[\s\S]*?\n---\s*\n/, "");
