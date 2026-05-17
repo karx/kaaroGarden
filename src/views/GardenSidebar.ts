@@ -1,6 +1,8 @@
 import { App, ItemView, WorkspaceLeaf, Notice, TFile, setIcon } from "obsidian";
 import type EBrainGardenerPlugin from "../../main";
 import { NoteScore, scoreInboxNotes } from "../scoring";
+import { processNoteCommand, publishNoteCommand } from "../commands/noteCommands";
+import { TriageModal } from "./TriageModal";
 
 export const GARDEN_SIDEBAR_VIEW_TYPE = "ebrain-garden-sidebar";
 
@@ -49,9 +51,9 @@ export class GardenSidebarView extends ItemView {
 
     // Stage buttons
     const actions = containerEl.createDiv({ cls: "ebrain-stage-actions" });
-    this.makeStageButton(actions, "▶ Process Note", "Process active note with LLM", "processNote");
-    this.makeStageButton(actions, "▶ Triage", "Open full triage report", "openTriage");
-    this.makeStageButton(actions, "▶ Publish", "Publish active note", "publishNote");
+    this.makeStageButton(actions, "▶ Process Note", "Process active note with LLM", () => processNoteCommand(this.plugin));
+    this.makeStageButton(actions, "▶ Triage", "Open full triage report", () => new TriageModal(this.app, this.plugin).open());
+    this.makeStageButton(actions, "▶ Publish", "Publish active note", () => publishNoteCommand(this.plugin));
 
     // Queue
     containerEl.createEl("h4", { text: "Inbox Queue", cls: "ebrain-section-title" });
@@ -59,12 +61,9 @@ export class GardenSidebarView extends ItemView {
     containerEl.createDiv({ cls: "ebrain-queue", attr: { id: "ebrain-queue" } });
   }
 
-  private makeStageButton(parent: HTMLElement, label: string, title: string, commandId: string): void {
+  private makeStageButton(parent: HTMLElement, label: string, title: string, callback: () => void): void {
     const btn = parent.createEl("button", { cls: "ebrain-stage-btn", text: label, title });
-    btn.addEventListener("click", () => {
-      // @ts-ignore
-      this.plugin.app.commands.executeCommandById(`ebrain-gardener:${commandId}`);
-    });
+    btn.addEventListener("click", callback);
   }
 
   async refresh(): Promise<void> {
@@ -134,14 +133,14 @@ export class GardenSidebarView extends ItemView {
     this.scores.slice(0, 20).forEach((score) => {
       const row = el.createDiv({ cls: "ebrain-queue-row" });
 
-      const scoreEl = row.createSpan({
+      row.createSpan({
         cls: `ebrain-score score-${this.scoreClass(score.total)}`,
         text: score.total.toFixed(2),
       });
 
       row.createSpan({ cls: "ebrain-maturity-icon", text: score.maturity.slice(0, 4) });
 
-      const name = row.createSpan({
+      row.createSpan({
         cls: "ebrain-note-name",
         text: score.file.basename,
         title: score.file.path,
@@ -158,8 +157,7 @@ export class GardenSidebarView extends ItemView {
       row.addEventListener("contextmenu", (e: MouseEvent) => {
         e.preventDefault();
         this.app.workspace.openLinkText(score.file.path, "", false).then(() => {
-          // @ts-ignore
-          this.plugin.app.commands.executeCommandById("ebrain-gardener:processNote");
+          processNoteCommand(this.plugin);
         });
       });
     });
@@ -171,5 +169,5 @@ export class GardenSidebarView extends ItemView {
     return "low";
   }
 
-  async onClose(): Promise<void> {}
 }
+

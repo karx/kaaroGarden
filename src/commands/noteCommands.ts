@@ -6,7 +6,6 @@ import { GeminiProvider } from "../llm/gemini";
 import { OpenAIProvider, AnthropicProvider } from "../llm/openai";
 import { OllamaProvider } from "../llm/ollama";
 import { LLMProvider } from "../llm/provider";
-import { GardenSidebarView } from "../views/GardenSidebar";
 
 // ── LLM progress reporter ─────────────────────────────────────────────────────
 
@@ -72,13 +71,6 @@ function getActiveFile(app: App): TFile | null {
   return file;
 }
 
-function refreshSidebar(plugin: EBrainGardenerPlugin): void {
-  const leaf = plugin.app.workspace
-    .getLeavesOfType("ebrain-garden-sidebar")
-    .find((l) => l.view instanceof GardenSidebarView);
-  if (leaf) (leaf.view as GardenSidebarView).refresh();
-}
-
 // ── Stage 1: PROCESS ─────────────────────────────────────────────────────────
 
 export async function processNoteCommand(plugin: EBrainGardenerPlugin): Promise<void> {
@@ -122,7 +114,7 @@ export async function processNoteCommand(plugin: EBrainGardenerPlugin): Promise<
 
     new FrontmatterDiffModal(plugin.app, plugin, file, suggestion, async (accepted) => {
       await applyFrontmatter(plugin.app, file, accepted);
-      refreshSidebar(plugin);
+      plugin.refreshSidebar();
     }).open();
   } catch (err: unknown) {
     const msg = err instanceof Error ? err.message : String(err);
@@ -176,7 +168,7 @@ export async function publishNoteCommand(plugin: EBrainGardenerPlugin): Promise<
     new FrontmatterDiffModal(plugin.app, plugin, file, suggestion, async (accepted) => {
       await applyFrontmatter(plugin.app, file, accepted);
       new Notice(`"${file.basename}" marked as published.`);
-      refreshSidebar(plugin);
+      plugin.refreshSidebar();
     }).open();
   } catch (err: unknown) {
     const msg = err instanceof Error ? err.message : String(err);

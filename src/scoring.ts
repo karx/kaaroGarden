@@ -21,13 +21,13 @@ export interface NoteScore {
 
 // ── Scoring functions ─────────────────────────────────────────────────────────
 
-function countWords(content: string): number {
+export function countWords(content: string): number {
   // Strip YAML frontmatter before counting
   const stripped = content.replace(/^---\s*\n[\s\S]*?\n---\s*\n/, "");
   return stripped.trim().split(/\s+/).filter(Boolean).length;
 }
 
-function scoreName(filename: string): number {
+export function scoreName(filename: string): number {
   const stem = filename.replace(/\.md$/, "").trim();
 
   // Untitled variants → 0.0
@@ -42,7 +42,7 @@ function scoreName(filename: string): number {
   return 0.7;
 }
 
-function scoreFrontmatter(content: string): { hasFm: boolean; hasPub: boolean; score: number } {
+export function scoreFrontmatter(content: string): { hasFm: boolean; hasPub: boolean; score: number } {
   const hasFm = content.startsWith("---");
   const hasPub = /^published\s*:/m.test(content);
 
@@ -50,7 +50,7 @@ function scoreFrontmatter(content: string): { hasFm: boolean; hasPub: boolean; s
   return { hasFm, hasPub, score };
 }
 
-function scoreMaturity(wordCount: number): { label: MaturityLabel; score: number } {
+export function scoreMaturity(wordCount: number): { label: MaturityLabel; score: number } {
   if (wordCount < 50) return { label: "STUB", score: 0.1 };
   if (wordCount <= 249) return { label: "SEED", score: 0.4 };
   if (wordCount <= 699) return { label: "BUDDING", score: 0.7 };

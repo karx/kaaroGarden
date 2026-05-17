@@ -26,7 +26,7 @@ export const DEFAULT_SETTINGS: EBrainSettings = {
 
 export const PROVIDER_MODELS: Record<LLMProvider, string[]> = {
   gemini: ["gemini-2.0-flash", "gemini-1.5-flash", "gemini-1.5-pro"],
-  openai: ["gpt-4o", "gpt-4o-mini", "gpt-4-turbo"],
-  anthropic: ["claude-3-5-sonnet-20241022", "claude-3-haiku-20240307"],
+  openai: ["gpt-4.1", "gpt-4o", "gpt-4o-mini"],
+  anthropic: ["claude-sonnet-4-6", "claude-opus-4-7", "claude-haiku-4-5-20251001"],
   ollama: ["llama3.2", "mistral", "phi3"],
 };

@@ -88,13 +88,10 @@ export default class EBrainGardenerPlugin extends Plugin {
       this.activateSidebar();
       this.updateRibbonBadge();
     });
-
-    console.log("[eBrain Gardener] loaded");
   }
 
   onunload(): void {
     this.app.workspace.detachLeavesOfType(GARDEN_SIDEBAR_VIEW_TYPE);
-    console.log("[eBrain Gardener] unloaded");
   }
 
   // ── Settings ──────────────────────────────────────────────────────────────
